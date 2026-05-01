@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMCB Checklist</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #eaf2ff;
+            background: radial-gradient(circle at top left, rgba(45, 212, 191, 0.22), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.28), transparent 34%),
+            linear-gradient(135deg, #06142f 0%, #08214a 48%, #0a2a5d 100%);
+        }
+
+        .site-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 22px 8vw;
+            border-bottom: 1px solid rgba(168, 199, 255, 0.18);
+            background: rgba(6, 20, 47, 0.72);
+            backdrop-filter: blur(14px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: 0;
+            color: #ffffff;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 8px;
+            color: #ffffff;
+            background: linear-gradient(135deg, #176bff, #14b8a6);
+            box-shadow: 0 14px 28px rgba(23, 107, 255, 0.24);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .auth-link {
+            border: 0;
+            background: transparent;
+            color: #c7dbff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 10px 12px;
+        }
+
+        .auth-link:hover {
+            color: #ffffff;
+        }
+
+        .signup-link {
+            border: 1px solid rgba(147, 197, 253, 0.32);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+        }
+
+        .user-avatar {
+            width: 46px;
+            height: 46px;
+            display: none;
+            place-items: center;
+            border-radius: 50%;
+            color: #ffffff;
+            background: linear-gradient(135deg, #0f766e, #2563eb);
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 12px 28px rgba(37, 99, 235, 0.24);
+        }
+
+        main {
+            display: grid;
+            min-height: calc(100vh - 87px);
+            max-height: calc(100vh - 87px);
+            overflow: hidden;
+            place-items: center;
+            padding: 28px 16px;
+        }
+
+        .panel {
+            width: min(1120px, 100%);
+            max-height: 100%;
+        }
+
+        .checkbox-panel {
+            border: 1px solid rgba(168, 199, 255, 0.18);
+            border-radius: 12px;
+            background: rgba(8, 28, 64, 0.82);
+            box-shadow: 0 26px 70px rgba(0, 0, 0, 0.34);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 143px);
+            overflow: hidden;
+        }
+
+        .stats-head {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            padding: 18px;
+            border-bottom: 1px solid rgba(168, 199, 255, 0.16);
+            background: rgba(7, 22, 50, 0.72);
+        }
+
+        .stat-card {
+            min-width: 0;
+            border: 1px solid rgba(168, 199, 255, 0.18);
+            border-radius: 8px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .stat-label {
+            display: block;
+            margin-bottom: 6px;
+            color: #9fb9e8;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            display: block;
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .checkbox-scroll {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 28px;
+            scrollbar-color: #60a5fa #071632;
+        }
+
+        .checkbox-scroll::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .checkbox-scroll::-webkit-scrollbar-track {
+            background: #071632;
+        }
+
+        .checkbox-scroll::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #60a5fa;
+        }
+
+        .checkbox-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+            gap: 14px;
+        }
+
+        .check-row {
+            position: relative;
+            display: grid;
+            place-items: center;
+            aspect-ratio: 1;
+            min-height: 62px;
+            border: 1px solid rgba(168, 199, 255, 0.2);
+            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(147, 197, 253, 0.08));
+            cursor: pointer;
+            transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+
+        .check-row:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 12px 26px rgba(96, 165, 250, 0.16);
+            transform: translateY(-1px);
+        }
+
+        .check-row input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .check-visual {
+            position: relative;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #7da5df;
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+        }
+
+        .check-visual::after {
+            content: "";
+            position: absolute;
+            width: 7px;
+            height: 13px;
+            border: solid #ffffff;
+            border-width: 0 3px 3px 0;
+            opacity: 0;
+            transform: translate(10px, 4px) rotate(45deg) scale(0.7);
+            transition: opacity 140ms ease, transform 180ms ease;
+        }
+
+        .check-row:has(input:checked) {
+            border-color: rgba(45, 212, 191, 0.68);
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.18), rgba(96, 165, 250, 0.18));
+            box-shadow: 0 16px 32px rgba(45, 212, 191, 0.18);
+        }
+
+        .check-row input:checked + .check-visual {
+            border-color: transparent;
+            background: linear-gradient(135deg, #2dd4bf, #60a5fa);
+            box-shadow: 0 10px 20px rgba(45, 212, 191, 0.26);
+            transform: scale(1.08);
+        }
+
+        .check-row input:checked + .check-visual::after {
+            opacity: 1;
+            transform: translate(10px, 4px) rotate(45deg) scale(1);
+        }
+
+        .load-sentinel {
+            height: 1px;
+            margin-top: 16px;
+        }
+
+        .toast-stack {
+            position: fixed;
+            right: 22px;
+            bottom: 22px;
+            z-index: 20;
+            display: grid;
+            gap: 10px;
+            width: min(360px, calc(100vw - 32px));
+            pointer-events: none;
+        }
+
+        .toast {
+            border: 1px solid rgba(168, 199, 255, 0.22);
+            border-left: 4px solid #60a5fa;
+            border-radius: 8px;
+            padding: 13px 14px;
+            color: #ffffff;
+            background: rgba(6, 20, 47, 0.94);
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.35;
+            transform: translateY(10px);
+            opacity: 0;
+            animation: toast-in 180ms ease forwards;
+        }
+
+        .toast.join {
+            border-left-color: #2dd4bf;
+        }
+
+        .toast.left {
+            border-left-color: #f97316;
+        }
+
+        .toast.rate {
+            border-left-color: #facc15;
+        }
+
+        .toast.hide {
+            animation: toast-out 180ms ease forwards;
+        }
+
+        @keyframes toast-in {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toast-out {
+            to {
+                transform: translateY(8px);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .site-header {
+                padding: 16px;
+            }
+
+            .brand {
+                font-size: 18px;
+            }
+
+            .brand-mark {
+                width: 38px;
+                height: 38px;
+            }
+
+            .header-actions {
+                gap: 4px;
+            }
+
+            .auth-link {
+                padding: 9px 8px;
+            }
+
+            .stats-head {
+                grid-template-columns: 1fr;
+                padding: 12px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-value {
+                font-size: 22px;
+            }
+
+            .checkbox-list {
+                grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+                gap: 12px;
+            }
+
+            .checkbox-scroll {
+                min-height: 0;
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="site-header">
+    <div class="brand">
+        <div class="brand-mark">O</div>
+        <span>OMCB</span>
+    </div>
+
+    <nav class="header-actions" aria-label="Account actions">
+        <button class="auth-link" id="loginLink" type="button">Login</button>
+        <button class="auth-link signup-link" id="signupLink" type="button">Signup</button>
+        <div class="user-avatar" id="userAvatar" aria-label="User initial"></div>
+    </nav>
+</header>
+
+<main>
+    <section class="panel">
+        <section class="checkbox-panel" aria-label="Checkbox list">
+            <div class="stats-head" aria-label="Checkbox summary">
+                <div class="stat-card">
+                    <span class="stat-label">Total</span>
+                    <span class="stat-value" id="totalCount">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Checked</span>
+                    <span class="stat-value" id="checkedCount">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Left</span>
+                    <span class="stat-value" id="leftCount">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Users</span>
+                    <span class="stat-value" id="userCount">0</span>
+                </div>
+            </div>
+
+            <div class="checkbox-scroll" id="checkboxScroll">
+                <div class="checkbox-list" id="checkboxContainer"></div>
+                <div class="load-sentinel" id="loadingRow"></div>
+            </div>
+        </section>
+    </section>
+</main>
+<div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+    const loginLink = document.getElementById('loginLink');
+    const signupLink = document.getElementById('signupLink');
+    const userAvatar = document.getElementById('userAvatar');
+    const checkboxScroll = document.getElementById('checkboxScroll');
+    const checkboxContainer = document.getElementById('checkboxContainer');
+    const totalCount = document.getElementById('totalCount');
+    const checkedCount = document.getElementById('checkedCount');
+    const leftCount = document.getElementById('leftCount');
+    const userCount = document.getElementById('userCount');
+    const toastStack = document.getElementById('toastStack');
+
+    const totalCheckboxes = 1000000;
+    const batchSize = 160;
+    const toastCooldown = 650;
+    const checkedComments = [
+        'Checked. That box just got promoted.',
+        'Nice click. Very official.',
+        'Box selected. Tiny celebration approved.',
+        'Checked. Productivity is pretending to be impressed.'
+    ];
+    const uncheckedComments = [
+        'Unchecked. The box has returned to mystery.',
+        'Rollback complete. Drama avoided.',
+        'Unchecked. That task is back in the wild.',
+        'Box released. It asked for personal space.'
+    ];
+    let renderedCount = 0;
+    let checkedTotal = 0;
+    let isRendering = false;
+    let lastToastAt = 0;
+    let lastRateToastAt = 0;
+    let activeRoomId = '';
+    let nextPage = 1;
+    let isPageLoading = false;
+
+    function showAvatar(letter) {
+        userAvatar.textContent = letter;
+        userAvatar.style.display = 'grid';
+        loginLink.style.display = 'none';
+        signupLink.style.display = 'none';
+    }
+
+    function formatNumber(number) {
+        return number.toLocaleString('en-US');
+    }
+
+    function updateUserCount(count) {
+        userCount.textContent = formatNumber(count);
+    }
+
+    function updateCounts() {
+        totalCount.textContent = formatNumber(totalCheckboxes);
+        checkedCount.textContent = formatNumber(checkedTotal);
+        leftCount.textContent = formatNumber(totalCheckboxes - checkedTotal);
+    }
+
+    function getRandomMessage(messages) {
+        return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.textContent = message;
+        toastStack.appendChild(toast);
+
+        window.setTimeout(function () {
+            toast.classList.add('hide');
+        }, 2600);
+
+        window.setTimeout(function () {
+            toast.remove();
+        }, 2850);
+    }
+
+    function showLimitedToast(message, type) {
+        const now = Date.now();
+
+        if (now - lastToastAt < toastCooldown) {
+            if (now - lastRateToastAt > 3000) {
+                showToast('Slow down, speed clicker. The boxes need a tiny nap.', 'rate');
+                lastRateToastAt = now;
+                return false;
+            }
+
+            return false;
+        }
+
+        lastToastAt = now;
+        showToast(message, type);
+        return true;
+    }
+
+    function renderUserJoin(name) {
+        showToast(name + ' joined the grid.', 'join');
+    }
+
+    function renderUserLeft(name) {
+        showToast(name + ' left the grid.', 'left');
+    }
+
+    async function loadCheckboxPage() {
+        if (isPageLoading || renderedCount >= totalCheckboxes) {
+            return;
+        }
+
+        isPageLoading = true;
+
+        try {
+            const result = await fetch('/state?page=' + nextPage + '&limit=' + batchSize);
+            const data = await result.json();
+            console.log(data)
+
+            renderCheckboxBatch(data.state);
+            checkedTotal = data.totalCheckedItem;
+            updateCounts();
+            nextPage += 1;
+        } catch (error) {
+            console.log(error);
+        } finally {
+            isPageLoading = false;
+        }
+    }
+
+    function renderCheckboxBatch(state = []) {
+        if (isRendering || renderedCount >= totalCheckboxes) {
+            return;
+        }
+
+        isRendering = true;
+
+        const fragment = document.createDocumentFragment();
+        const nextLimit = Math.min(renderedCount + batchSize, totalCheckboxes);
+
+        for (let index = renderedCount; index < nextLimit; index += 1) {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            const visual = document.createElement('span');
+
+            label.className = 'check-row';
+            label.setAttribute('aria-label', 'Checkbox ' + (index + 1));
+            checkbox.type = 'checkbox';
+            checkbox.id = 'task-' + index;
+            visual.className = 'check-visual';
+
+            label.appendChild(checkbox);
+            label.appendChild(visual);
+            fragment.appendChild(label);
+        }
+
+        if (state.length !== 0) {
+            state.forEach(({id,  value}) => {
+                const input = fragment.getElementById(id);
+                if (input) {
+                    input.checked = value;
+                }
+            });
+        }
+
+        checkboxContainer.appendChild(fragment);
+        renderedCount = nextLimit;
+        isRendering = false;
+    }
+
+    async function handleCheckboxScroll() {
+        const distanceFromBottom = checkboxScroll.scrollHeight - checkboxScroll.scrollTop - checkboxScroll.clientHeight;
+
+        if (distanceFromBottom < 180) {
+            await loadCheckboxPage();
+        }
+    }
+
+    function getRoomId(checkpoint) {
+        return 'room-' + checkpoint;
+    }
+
+    function getRoomCheckpointFromIndex(index) {
+        return Math.min(Math.ceil((index + 1) / batchSize) * batchSize, totalCheckboxes);
+    }
+
+    function getVisibleCheckpoint() {
+        const firstCheckbox = checkboxContainer.firstElementChild;
+
+        if (!firstCheckbox || renderedCount === 0) {
+            return batchSize;
+        }
+
+        const gridStyles = window.getComputedStyle(checkboxContainer);
+        const rowGap = Number.parseFloat(gridStyles.rowGap) || 0;
+        const rowHeight = firstCheckbox.offsetHeight + rowGap;
+        let columns = 1;
+
+        for (let index = 1; index < checkboxContainer.children.length; index += 1) {
+            if (checkboxContainer.children[index].offsetTop !== firstCheckbox.offsetTop) {
+                break;
+            }
+
+            columns += 1;
+        }
+
+        const marker = checkboxScroll.scrollTop + (checkboxScroll.clientHeight / 2) - checkboxContainer.offsetTop;
+        const rowIndex = Math.max(0, Math.floor(marker / rowHeight));
+        const visibleIndex = Math.min((rowIndex * columns), renderedCount - 1);
+
+        return getRoomCheckpointFromIndex(visibleIndex);
+    }
+
+
+    loginLink.addEventListener('click', function () {
+        showAvatar('L');
+        renderUserJoin('Login user');
+    });
+
+    signupLink.addEventListener('click', function () {
+        showAvatar('S');
+        renderUserJoin('Signup user');
+    });
+
+    checkboxContainer.addEventListener('change', function (event) {
+      
+      if (event.target.type !== 'checkbox') {
+            return;
+        }
+
+        checkedTotal += event.target.checked ? 1 : -1;
+        updateCounts();
+       const isGood = showLimitedToast(
+            event.target.checked ? getRandomMessage(checkedComments) : getRandomMessage(uncheckedComments),
+            event.target.checked ? 'join' : 'left'
+        );
+
+       if (isGood) {
+           ioEvent(event.target);
+       }
+    });
+
+    checkboxScroll.addEventListener('scroll', handleCheckboxScroll);
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await loadCheckboxPage();
+    });
+
+    // socket code
+    const socket = io();
+
+    socket.on('liveUser', (count) => {
+        updateUserCount(count);
+    });
+
+    socket.on('whoJoin', (data) => {
+      const {name, type} = data;
+      if (type === 'Join') {
+        renderUserJoin(name);
+      }else {
+        renderUserLeft(name);
+      }
+    })
+
+    function ioEvent (obj) {
+      socket.emit('onToggle', JSON.stringify({id: obj.id, value: obj.checked}));
+    }
+
+
+    socket.on('toggleChanged', (data) => {
+        const checkbox = document.getElementById(data.id);
+
+        if (Number.isFinite(data.totalCheckedItem)) {
+            checkedTotal = data.totalCheckedItem;
+            updateCounts();
+        }
+
+        if (!checkbox || checkbox.checked === data.value) {
+            return;
+        }
+
+      checkbox.checked = data.value;
+        if (!Number.isFinite(data.totalCheckedItem)) {
+            checkedTotal += data.value ? 1 : -1;
+            updateCounts();
+        }
+        showLimitedToast(
+            data.value ? getRandomMessage(checkedComments) : getRandomMessage(uncheckedComments),
+            data.value ? 'join' : 'left'
+        );
+    });
+</script>
+</body>
+</html>
