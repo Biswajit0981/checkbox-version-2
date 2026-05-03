@@ -5,3 +5,5 @@ function createClient() {
 }
 
 export const stateRedis = createClient();
+export const publisher = createClient();
+export const subscriber = createClient();
