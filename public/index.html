@@ -295,7 +295,10 @@
         .toast.hide {
             animation: toast-out 180ms ease forwards;
         }
-
+        #logOut {
+            color: red;
+            display: none;
+        }
         @keyframes toast-in {
             to {
                 transform: translateY(0);
@@ -366,7 +369,7 @@
 
     <nav class="header-actions" aria-label="Account actions">
         <button class="auth-link" id="loginLink" type="button">Login</button>
-        <!--        <button class="auth-link signup-link" id="signupLink" type="button">Signup</button>-->
+    <button class="auth-link log-out" id="logOut" type="button">Logout</button>
         <div class="user-avatar" id="userAvatar" aria-label="User initial"></div>
     </nav>
 </header>
@@ -405,6 +408,7 @@
 
 <script>
     const loginLink = document.getElementById('loginLink');
+    const logOutBtn = document.getElementById('logOut');
     const userAvatar = document.getElementById('userAvatar');
     const checkboxScroll = document.getElementById('checkboxScroll');
     const checkboxContainer = document.getElementById('checkboxContainer');
@@ -442,6 +446,7 @@
         userAvatar.textContent = letter;
         userAvatar.style.display = 'grid';
         loginLink.style.display = 'none';
+        logOutBtn.style.display = 'block';
     }
 
     function disableAvatar() {
@@ -651,7 +656,11 @@
 
     checkboxScroll.addEventListener('scroll', handleCheckboxScroll);
 
-
+    logOutBtn.addEventListener("click", () => {
+        disableAvatar();
+        disableCheckbox();
+        logOutBtn.style.display = 'none';
+    })
     let socket; // ✅ global socket
 
     async function initSocket() {
@@ -683,11 +692,11 @@
     function startApp(socket) {
 
         socket.on('connect', () => {
-            console.log("✅ Connected:", socket.id);
+            console.log("Connected:", socket.id);
         });
 
         socket.on('connect_error', (err) => {
-            console.error("❌ Connection error:", err.message);
+            console.error("Connection error:", err.message);
             disableCheckbox();
         });
 
@@ -697,7 +706,7 @@
         });
 
         socket.on('reconnect', () => {
-            console.log("🔄 Reconnected");
+            console.log("Reconnected");
             enableCheckbox();
         });
 
@@ -761,7 +770,10 @@
                 disableAvatar();
             }
         } catch (err) {
-            console.error("User fetch failed:", err);
+            console.log(err)
+
+            showToast("Please Login to play")
+
             disableCheckbox();
             disableAvatar();
         }
