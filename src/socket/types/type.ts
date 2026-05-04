@@ -1,3 +1,4 @@
+import { Socket } from "socket.io";
 export type IUser = 'Join' | 'Leave'
 export type IToggle = {
     id:string;
@@ -30,4 +31,11 @@ export interface InternalServerEvents {
 export interface SocketData {
     userCount: number;
     roomId?: string;
+}
+
+export interface CustomSocket extends Socket {
+    user?: {
+        id: string;
+        name: string;
+    } |  null;
 }

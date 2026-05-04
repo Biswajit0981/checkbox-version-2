@@ -14,15 +14,18 @@
   "license": "ISC",
   "packageManager": "pnpm@10.33.2",
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/node": "^25.6.0",
     "tsc-watch": "^7.2.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.10.1",
+    "jose": "^6.2.3",
     "socket.io": "^4.8.3"
   }
 }

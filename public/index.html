@@ -366,7 +366,7 @@
 
     <nav class="header-actions" aria-label="Account actions">
         <button class="auth-link" id="loginLink" type="button">Login</button>
-        <button class="auth-link signup-link" id="signupLink" type="button">Signup</button>
+        <!--        <button class="auth-link signup-link" id="signupLink" type="button">Signup</button>-->
         <div class="user-avatar" id="userAvatar" aria-label="User initial"></div>
     </nav>
 </header>
@@ -388,7 +388,7 @@
                     <span class="stat-value" id="leftCount">0</span>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-label">Users</span>
+                    <span class="stat-label">Active Users</span>
                     <span class="stat-value" id="userCount">0</span>
                 </div>
             </div>
@@ -405,7 +405,6 @@
 
 <script>
     const loginLink = document.getElementById('loginLink');
-    const signupLink = document.getElementById('signupLink');
     const userAvatar = document.getElementById('userAvatar');
     const checkboxScroll = document.getElementById('checkboxScroll');
     const checkboxContainer = document.getElementById('checkboxContainer');
@@ -443,7 +442,11 @@
         userAvatar.textContent = letter;
         userAvatar.style.display = 'grid';
         loginLink.style.display = 'none';
-        signupLink.style.display = 'none';
+    }
+
+    function disableAvatar() {
+        userAvatar.style.display = 'none';
+        loginLink.style.display = 'block';
     }
 
     function formatNumber(number) {
@@ -515,8 +518,6 @@
         try {
             const result = await fetch('/state?page=' + nextPage + '&limit=' + batchSize);
             const data = await result.json();
-            console.log(data)
-
             renderCheckboxBatch(data.state);
             checkedTotal = data.totalCheckedItem;
             updateCounts();
@@ -555,7 +556,7 @@
         }
 
         if (state.length !== 0) {
-            state.forEach(({id,  value}) => {
+            state.forEach(({id, value}) => {
                 const input = fragment.getElementById(id);
                 if (input) {
                     input.checked = value;
@@ -576,9 +577,6 @@
         }
     }
 
-    function getRoomId(checkpoint) {
-        return 'room-' + checkpoint;
-    }
 
     function getRoomCheckpointFromIndex(index) {
         return Math.min(Math.ceil((index + 1) / batchSize) * batchSize, totalCheckboxes);
@@ -611,84 +609,175 @@
         return getRoomCheckpointFromIndex(visibleIndex);
     }
 
+    function disableCheckbox() {
+        // console.log("Trigger")
+        const curr = checkboxContainer.querySelectorAll("input");
+
+        curr.forEach((input) => {
+            input.disabled = true;
+        });
+    }
+
+    function enableCheckbox() {
+        // console.log("Trigger")
+        const curr = checkboxContainer.querySelectorAll("input");
+
+        curr.forEach((input) => {
+            input.disabled = false;
+        });
+    }
 
     loginLink.addEventListener('click', function () {
-        showAvatar('L');
-        renderUserJoin('Login user');
-    });
-
-    signupLink.addEventListener('click', function () {
-        showAvatar('S');
-        renderUserJoin('Signup user');
+        window.location.href = `http://localhost:3000/api/o/oauth2/v1/auth?client_id=client_0QK1avRkgukMWMG3yzOtgeBiDWNBpo4bJxCto0NpUzI&redirect_uri=http://localhost:3001/callback`;
     });
 
     checkboxContainer.addEventListener('change', function (event) {
-      
-      if (event.target.type !== 'checkbox') {
+
+        if (event.target.type !== 'checkbox') {
             return;
         }
 
         checkedTotal += event.target.checked ? 1 : -1;
         updateCounts();
-       const isGood = showLimitedToast(
+        const isGood = showLimitedToast(
             event.target.checked ? getRandomMessage(checkedComments) : getRandomMessage(uncheckedComments),
             event.target.checked ? 'join' : 'left'
         );
 
-       if (isGood) {
-           ioEvent(event.target);
-       }
+        if (isGood) {
+            ioEvent(event.target);
+        }
     });
 
     checkboxScroll.addEventListener('scroll', handleCheckboxScroll);
 
-    window.addEventListener('DOMContentLoaded', async () => {
-        await loadCheckboxPage();
-    });
 
-    // socket code
-    const socket = io();
+    let socket; // ✅ global socket
 
-    socket.on('liveUser', (count) => {
-        updateUserCount(count);
-    });
+    async function initSocket() {
+        try {
+            socket = io({
+                auth: async (cb) => {
+                    try {
+                        const response = await fetch('/session');
+                        const res = await response.json();
 
-    socket.on('whoJoin', (data) => {
-      const {name, type} = data;
-      if (type === 'Join') {
-        renderUserJoin(name);
-      }else {
-        renderUserLeft(name);
-      }
-    })
+                        cb({
+                            token: res["session-token"]
+                        });
+                    } catch (err) {
+                        console.error("Auth fetch failed:", err);
+                        cb({token: null});
+                    }
+                }
+            });
 
-    function ioEvent (obj) {
-      socket.emit('onToggle', JSON.stringify({id: obj.id, value: obj.checked}));
+            startApp(socket);
+            return socket;
+
+        } catch (error) {
+            console.error("Socket init error:", error);
+        }
     }
 
+    function startApp(socket) {
 
-    socket.on('toggleChanged', (data) => {
-        const checkbox = document.getElementById(data.id);
+        socket.on('connect', () => {
+            console.log("✅ Connected:", socket.id);
+        });
 
-        if (Number.isFinite(data.totalCheckedItem)) {
-            checkedTotal = data.totalCheckedItem;
-            updateCounts();
+        socket.on('connect_error', (err) => {
+            console.error("❌ Connection error:", err.message);
+            disableCheckbox();
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log("⚠️ Disconnected:", reason);
+            disableCheckbox();
+        });
+
+        socket.on('reconnect', () => {
+            console.log("🔄 Reconnected");
+            enableCheckbox();
+        });
+
+        socket.on('liveUser', (count) => {
+            updateUserCount(count);
+        });
+
+        socket.on('whoJoin', (data) => {
+            const {name, type} = data;
+
+            if (type === 'Join') {
+                renderUserJoin(name);
+            } else {
+                renderUserLeft(name);
+            }
+        });
+
+        socket.on('toggleChanged', (data) => {
+            const checkbox = document.getElementById(data.id);
+
+            if (Number.isFinite(data.totalCheckedItem)) {
+                checkedTotal = data.totalCheckedItem;
+                updateCounts();
+            }
+
+            if (!checkbox || checkbox.checked === data.value) {
+                return;
+            }
+
+            checkbox.checked = data.value;
+
+            if (!Number.isFinite(data.totalCheckedItem)) {
+                checkedTotal += data.value ? 1 : -1;
+                updateCounts();
+            }
+
+            showLimitedToast(
+                data.value
+                    ? getRandomMessage(checkedComments)
+                    : getRandomMessage(uncheckedComments),
+                data.value ? 'join' : 'left'
+            );
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        await Promise.all([
+            initSocket(),
+            loadCheckboxPage()
+        ]);
+
+        try {
+            const userAuth = await fetch('/user-info');
+            const user = await userAuth.json();
+
+            if (user.data) {
+                const firstLetter = user.data.firstName ?? 'A';
+                showAvatar(firstLetter.charAt(0));
+            } else {
+                disableCheckbox();
+                disableAvatar();
+            }
+        } catch (err) {
+            console.error("User fetch failed:", err);
+            disableCheckbox();
+            disableAvatar();
         }
+    });
 
-        if (!checkbox || checkbox.checked === data.value) {
+    function ioEvent(obj) {
+        if (!socket || !socket.connected) {
+            console.warn("Socket not connected");
             return;
         }
 
-      checkbox.checked = data.value;
-        if (!Number.isFinite(data.totalCheckedItem)) {
-            checkedTotal += data.value ? 1 : -1;
-            updateCounts();
-        }
-        showLimitedToast(
-            data.value ? getRandomMessage(checkedComments) : getRandomMessage(uncheckedComments),
-            data.value ? 'join' : 'left'
-        );
-    });
+        socket.emit('onToggle', JSON.stringify({
+            id: obj.id,
+            value: obj.checked
+        }));
+    }
 </script>
 </body>
 </html>

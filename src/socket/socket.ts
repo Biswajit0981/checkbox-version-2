@@ -2,13 +2,14 @@ import {Server as SocketServer} from "socket.io";
 
 import type {Server} from "node:http";
 import type {
-    ClientToServerEvents,
+    ClientToServerEvents, CustomSocket,
     InternalServerEvents,
     ServerToClientEvents,
     SocketData,
 } from "./types/type.js";
 import SocketController from "./controllers/SocketController.js";
-import {publisher, subscriber} from "./redis/redis.js";
+import { subscriber} from "./redis/redis.js";
+import authControl from "./middleware/middleware.js";
 
 export default function initSocketWithServer(server: Server) {
     const io = new SocketServer<
@@ -45,12 +46,14 @@ export default function initSocketWithServer(server: Server) {
 
     });
 
-    io.on("connection", async (socket) => {
+    io.use(authControl);
+
+    io.on("connection", async (socket:CustomSocket) => {
 
         await SocketController.onConnect(socket, io);
         await SocketController.whoJoin(socket, io);
 
-        socket.on("onToggle", SocketController.onToggle(io));
+        socket.on("onToggle", SocketController.onToggle(io, socket));
 
         socket.on("disconnect", async () => {
             await SocketController.onDisconnect(socket, io);
