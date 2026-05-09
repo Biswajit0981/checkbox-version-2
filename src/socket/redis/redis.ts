@@ -1,8 +1,6 @@
 import {Redis} from "ioredis";
 
 function createClient() {
-    console.log(process.env.REDIS_URL)
-
     return new Redis(process.env.REDIS_URL || "redis://redis:6379");
 }
 
