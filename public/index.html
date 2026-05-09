@@ -635,7 +635,8 @@
     }
 
     loginLink.addEventListener('click', function () {
-        window.location.href = `http://localhost:3000/api/o/oauth2/v1/auth?client_id=client_0QK1avRkgukMWMG3yzOtgeBiDWNBpo4bJxCto0NpUzI&redirect_uri=http://localhost:3001/callback`;
+        window.location.href = `https://oidc-production-9d1a.up.railway.app/api/o/oauth2/v1/auth?client_id=client_ELELo7wzcIscJdVmoqV_Rgcv4rSJekLIbWtPgjmjUwY&redirect_uri=
+https://checkbox-version-2-production.up.railway.app/callback`;
     });
 
     checkboxContainer.addEventListener('change', function (event) {
@@ -789,7 +790,7 @@
             disableAvatar();
             disableCheckbox();
             logOutBtn.style.display = 'none';
-        }catch (err) {
+        } catch (err) {
             console.log(err)
         }
     });
