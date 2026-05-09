@@ -1,7 +1,7 @@
 import type {Request, Response, NextFunction} from "express"
 import {rClient} from "../utils/rate-limit.js";
 
-export function RateLimiter(limitTime: number = 2000) {
+export function RateLimiter(limitTime: number = 1000) {
 
     return async (req: Request, res: Response, next: NextFunction) => {
 

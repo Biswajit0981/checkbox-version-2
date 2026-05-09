@@ -18,6 +18,7 @@ export interface ServerToClientEvents {
     whoJoin: (obj: {name:string, type: IUser}) => void;
     toggleChanged: (obj: IToggle) => void;
     onDisconnect: (d:string, callback: (n:number) => void) => void;
+    rate_limit: (d:string) => void;
 }
 
 export interface ClientToServerEvents {

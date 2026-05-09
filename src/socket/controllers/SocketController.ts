@@ -1,11 +1,28 @@
 import type {Server, Socket} from "socket.io";
 import {publisher, stateRedis} from "../redis/redis.js";
 import type {CustomSocket, IToggle} from "../types/type.js";
+import {rClient} from "../../app/utils/rate-limit.js";
 
 export default class SocketController {
-    static onToggle(io: Server, socket:CustomSocket) {
+    static onToggle(io: Server, socket: CustomSocket) {
         return async (data: string): Promise<void> => {
             if (!socket.user) return;
+
+            const key = `message-rate:${socket.user.id!}`;
+
+            const current = await rClient.incr(key);
+
+            if (current === 1) {
+                await rClient.expire(key, 5);
+            }
+
+            if (current > 3) {
+
+                socket.emit("rate_limit", {
+                    message: "Too many messages"
+                });
+                return;
+            }
 
             const {id, value} = JSON.parse(data) as IToggle;
 
@@ -36,23 +53,24 @@ export default class SocketController {
         io.emit('liveUser', Number(total));
     }
 
-    static  onDisconnect(socket: CustomSocket, io: Server) {
+    static onDisconnect(socket: CustomSocket, io: Server) {
         // if (!socket.user) return;
-       return async () => {
-           if (socket.user) {
-               const x = await stateRedis.srem('isPresent', socket.user?.id!);
-           };
+        return async () => {
+            if (socket.user) {
+                const x = await stateRedis.srem('isPresent', socket.user?.id!);
+            }
+            ;
 
-           const total = await stateRedis.scard('isPresent');
+            const total = await stateRedis.scard('isPresent');
 
-           await publisher.publish('isPresent', total.toString());
-           io.emit('liveUser', Number(total));
-       }
+            await publisher.publish('isPresent', total.toString());
+            io.emit('liveUser', Number(total));
+        }
     }
 
     static async whoJoin(socket: CustomSocket, io: Server) {
         const data = {
-            name:  socket.user?.name! || "Anonymous",
+            name: socket.user?.name! || "Anonymous",
             type: "Join"
         }
         await publisher.publish("whoJoin", JSON.stringify(data));
@@ -62,7 +80,7 @@ export default class SocketController {
     static async whoLeft(socket: CustomSocket, io: Server) {
 
         const data = {
-            name:  socket.user?.name! || "Anonymous",
+            name: socket.user?.name! || "Anonymous",
             type: "Join"
         }
 

@@ -646,14 +646,13 @@
 
         checkedTotal += event.target.checked ? 1 : -1;
         updateCounts();
-        const isGood = showLimitedToast(
-            event.target.checked ? getRandomMessage(checkedComments) : getRandomMessage(uncheckedComments),
-            event.target.checked ? 'join' : 'left'
-        );
+        // const isGood = showLimitedToast(
+        //     event.target.checked ? getRandomMessage(checkedComments) : getRandomMessage(uncheckedComments),
+        //     event.target.checked ? 'join' : 'left'
+        // );
+        showToast(event.target.checked ? getRandomMessage(checkedComments) : getRandomMessage(uncheckedComments), event.target.checked ? 'join' : 'left')
+        ioEvent(event.target);
 
-        if (isGood) {
-            ioEvent(event.target);
-        }
     });
 
     checkboxScroll.addEventListener('scroll', handleCheckboxScroll);
@@ -719,6 +718,10 @@
             } else {
                 renderUserLeft(name);
             }
+        });
+
+        socket.on('rate_limit', () => {
+            showToast('Too many Request', 'rate')
         });
 
         socket.on('toggleChanged', (data) => {
