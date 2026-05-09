@@ -1,7 +1,7 @@
 import {Redis} from "ioredis";
 
 function createClient() {
-    return new Redis();
+    return new Redis(process.env.REDIS_URL!);
 }
 
 export const stateRedis = createClient();
