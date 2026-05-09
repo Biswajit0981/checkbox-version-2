@@ -1,7 +1,7 @@
 import {Redis} from "ioredis";
 
 function createClient() {
-    return new Redis(process.env.REDIS_URL!);
+    return new Redis(process.env.REDIS_URL || "redis://redis:6379");
 }
 
 export const stateRedis = createClient();
