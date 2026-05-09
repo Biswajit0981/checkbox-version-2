@@ -27,6 +27,7 @@ export default class SocketController {
     }
 
     static async onConnect(socket: CustomSocket, io: Server) {
+
         if (socket.user) {
             await stateRedis.sadd('isPresent', socket.user?.id!);
         }
@@ -35,15 +36,18 @@ export default class SocketController {
         io.emit('liveUser', Number(total));
     }
 
-    static async onDisconnect(socket: CustomSocket, io: Server) {
+    static  onDisconnect(socket: CustomSocket, io: Server) {
         // if (!socket.user) return;
-        if (socket.user) {
-            await stateRedis.srem('isPresent', socket.user?.id!);
-        };
+       return async () => {
+           if (socket.user) {
+               const x = await stateRedis.srem('isPresent', socket.user?.id!);
+           };
 
-        const total = await stateRedis.scard('isPresent');
-        await publisher.publish('isPresent', total.toString());
-        io.emit('liveUser', Number(total));
+           const total = await stateRedis.scard('isPresent');
+
+           await publisher.publish('isPresent', total.toString());
+           io.emit('liveUser', Number(total));
+       }
     }
 
     static async whoJoin(socket: CustomSocket, io: Server) {

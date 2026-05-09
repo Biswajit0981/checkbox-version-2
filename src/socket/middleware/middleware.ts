@@ -4,6 +4,7 @@ import type {CustomSocket} from "../types/type.js";
 
 export default async function authControl(socket: CustomSocket, next: (err?: Error) => void) {
     const token = socket.handshake.auth.token;
+
     try {
         const client_id = process.env.CLIENT_ID;
         const client_secret = process.env.CLIENT_SECRET;

@@ -295,10 +295,12 @@
         .toast.hide {
             animation: toast-out 180ms ease forwards;
         }
+
         #logOut {
             color: red;
             display: none;
         }
+
         @keyframes toast-in {
             to {
                 transform: translateY(0);
@@ -369,7 +371,7 @@
 
     <nav class="header-actions" aria-label="Account actions">
         <button class="auth-link" id="loginLink" type="button">Login</button>
-    <button class="auth-link log-out" id="logOut" type="button">Logout</button>
+        <button class="auth-link log-out" id="logOut" type="button">Logout</button>
         <div class="user-avatar" id="userAvatar" aria-label="User initial"></div>
     </nav>
 </header>
@@ -656,11 +658,6 @@
 
     checkboxScroll.addEventListener('scroll', handleCheckboxScroll);
 
-    logOutBtn.addEventListener("click", () => {
-        disableAvatar();
-        disableCheckbox();
-        logOutBtn.style.display = 'none';
-    })
     let socket; // ✅ global socket
 
     async function initSocket() {
@@ -771,11 +768,26 @@
             }
         } catch (err) {
             console.log(err)
-
-            showToast("Please Login to play")
-
+            showToast("Please Login to play", 'rate')
             disableCheckbox();
             disableAvatar();
+        }
+    });
+
+    logOutBtn.addEventListener("click", async () => {
+        if (!socket || !socket.connected) {
+            console.warn("Socket not connected");
+            return;
+        }
+
+        try {
+            socket.emit('onDisconnect');
+            await fetch('/logout');
+            disableAvatar();
+            disableCheckbox();
+            logOutBtn.style.display = 'none';
+        }catch (err) {
+            console.log(err)
         }
     });
 

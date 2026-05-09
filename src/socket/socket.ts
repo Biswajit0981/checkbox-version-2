@@ -10,6 +10,7 @@ import type {
 import SocketController from "./controllers/SocketController.js";
 import { subscriber} from "./redis/redis.js";
 import authControl from "./middleware/middleware.js";
+import {RateLimiter} from "../app/middleware/index.js";
 
 export default function initSocketWithServer(server: Server) {
     const io = new SocketServer<
@@ -54,9 +55,8 @@ export default function initSocketWithServer(server: Server) {
         await SocketController.whoJoin(socket, io);
 
         socket.on("onToggle", SocketController.onToggle(io, socket));
-
+        socket.on('onDisconnect', SocketController.onDisconnect(socket,  io))
         socket.on("disconnect", async () => {
-            await SocketController.onDisconnect(socket, io);
             await SocketController.whoLeft(socket, io);
         });
     });

@@ -17,6 +17,7 @@ export interface ServerToClientEvents {
     liveUser: (userCount: number) => void;
     whoJoin: (obj: {name:string, type: IUser}) => void;
     toggleChanged: (obj: IToggle) => void;
+    onDisconnect: (d:string, callback: (n:number) => void) => void;
 }
 
 export interface ClientToServerEvents {

@@ -56,7 +56,7 @@ export default class Controller {
 
     static getSession(req: Request, res: Response) {
         if (!req.cookies) {
-           throw new Error("Unauthorized");
+            throw new Error("Unauthorized");
         }
         return res.status(200).json(req.cookies);
     }
@@ -76,8 +76,20 @@ export default class Controller {
             throw new Error("Unauthorized");
         }
 
-        const data  =  await fetchUserinfo.json();
+        const data = await fetchUserinfo.json();
 
         return res.status(200).json(data);
+    }
+
+    static async logOut(req: Request, res: Response) {
+
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax" as const,
+            maxAge: 24 * 60 * 60 * 1000,
+        };
+
+        return res.status(200).clearCookie("session-token", cookieOptions).clearCookie("active-token", cookieOptions).send();
     }
 }
