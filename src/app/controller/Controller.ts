@@ -30,14 +30,14 @@ export default class Controller {
     static async callback(req: Request, res: Response) {
         const code = req.query.code;
         if (!code) {
-            return res.redirect(`${process.env.ISSUER}/api/o/oauth2/v1/auth?client_id=${process.env.CLIENT_ID}&redirect_uri=http://localhost:3001/callback`)
+            return res.redirect(`${process.env.ISSUER}/api/o/oauth2/v1/auth?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URL}`)
         }
-        const response = await fetch(`${process.env.ISSUER}/api/o/oauth2/v1/token?client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&redirect_uri=http://localhost:3001/callback&code=${code}`, {
+        const response = await fetch(`${process.env.ISSUER}/api/o/oauth2/v1/token?client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&redirect_uri=${process.env.REDIRECT_URL}&code=${code}`, {
             method: "POST",
         });
 
         if (!response.ok) {
-            return res.redirect(`${process.env.ISSUER}/api/o/oauth2/v1/auth?client_id=${process.env.CLIENT_ID}&redirect_uri=http://localhost:3001/callback`)
+            return res.redirect(`${process.env.ISSUER}/api/o/oauth2/v1/auth?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URL}`)
         }
 
         const {data} = await response.json();
@@ -66,7 +66,7 @@ export default class Controller {
             throw new Error("Unauthorized");
         }
 
-        const fetchUserinfo = await fetch(`${process.env.ISSUER}/api/o/oauth2/v1/user_info?client_id=${process.env.CLIENT_ID}&redirect_uri=http://localhost:3001/callback`, {
+        const fetchUserinfo = await fetch(`${process.env.ISSUER}/api/o/oauth2/v1/user_info?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URL}`, {
             headers: {
                 Authorization: `Bearer ${req.cookies["session-token"]}`,
             }
